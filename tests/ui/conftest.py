@@ -15,38 +15,65 @@ if PROJECT_ROOT not in sys.path:
 
 
 import pytest
-from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver import Chrome, ChromeOptions, Firefox, FirefoxOptions, Edge, EdgeOptions, Ie, IeOptions
 from pages.basePage import BasePage
 from pages.homePage import HomePage
 from pages.login import LoginPage
 from pages.signup import SignUpPage
 
 
-@pytest.fixture(scope="function")
-def initalise_driver():
-    options = ChromeOptions()
-    options.add_argument("--start-maximized")
+def pytest_addoption(parser):
+    parser.addoption(
+        "--browser_name",
+        action="store",
+        default="chrome",
+        help="Specifies which browser to run the tests on"
+    )
 
-    driver = Chrome(options=options)
+@pytest.fixture(scope="function")
+def initialize_driver(request):
+    driver = request.config.getoption("--browser_name")
+    
+
+    match driver.lower():
+        case "chrome":
+            options = ChromeOptions()
+            options.add_argument("--start-maximized")
+            driver = Chrome(options=options)
+        case "firefox":
+            options = FirefoxOptions()
+            options.add_argument("--start_maximized")
+            driver = Firefox(options=options)
+            driver.maximize_window()
+        case "edge":
+            options = EdgeOptions()
+            options.add_argument("--start_maximized")
+            driver = Edge(options=options)
+            driver.maximize_window()
+        case "ie":
+            options = IeOptions()
+            options.add_argument("--start_maximized")
+            driver = Ie(options=IeOptions)
+            driver.maximize_window()
     yield driver
     driver.quit()
 
 
 @pytest.fixture
-def login_page(initalise_driver):
-    return LoginPage(initalise_driver)
+def login_page(initialize_driver):
+    return LoginPage(initialize_driver)
 
 
 @pytest.fixture
-def base_page(initalise_driver):
-    return BasePage(initalise_driver)
+def base_page(initialize_driver):
+    return BasePage(initialize_driver)
 
 
 @pytest.fixture
-def home_page(initalise_driver):
-    return HomePage(initalise_driver)
+def home_page(initialize_driver):
+    return HomePage(initialize_driver)
 
 
 @pytest.fixture
-def sign_up_page(initalise_driver):
-    return SignUpPage(initalise_driver)
+def sign_up_page(initialize_driver):
+    return SignUpPage(initialize_driver)

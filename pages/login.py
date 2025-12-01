@@ -23,5 +23,4 @@ class LoginPage(BasePage):
     def register(self, name, email):
         self.driver.find_element(*self.signup_username).send_keys(name)
         self.driver.find_element(*self.signup_email).send_keys(email)
-        print("Entered email")
         self.driver.find_element(*self.signup_btn).click()

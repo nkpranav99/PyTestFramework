@@ -43,7 +43,6 @@ class SignUpPage(BasePage):
         
 
     def select_title(self, title):
-        print(self.title[0], self.title[1].format(title))
         self.driver.find_element(self.title[0], self.title[1].format(title)).click()
 
     def select_date(self, date):
@@ -74,17 +73,17 @@ class SignUpPage(BasePage):
         self.driver.find_element(*self.last_name).send_keys(info["last_name"])
         self.driver.find_element(*self.company).send_keys(info["company"])
 
-        self.driver.find_element(*self.company).send_keys(info["address"]["line1"])
-        self.driver.find_element(*self.company).send_keys(info["address"]["line2"])
+        self.driver.find_element(*self.address1).send_keys(info["address"]["line1"])
+        self.driver.find_element(*self.address2).send_keys(info["address"]["line2"])
 
         countries = Select(self.driver.find_element(*self.country))
         countries.select_by_value(info["address"]["country"])
 
-        self.driver.find_element(*self.company).send_keys(info["address"]["state"])
-        self.driver.find_element(*self.company).send_keys(info["address"]["city"])
-        self.driver.find_element(*self.company).send_keys(info["address"]["zipcode"])
+        self.driver.find_element(*self.state).send_keys(info["address"]["state"])
+        self.driver.find_element(*self.city).send_keys(info["address"]["city"])
+        self.driver.find_element(*self.zipcode).send_keys(info["address"]["zipcode"])
 
-        self.driver.find_element(*self.company).send_keys(info["mobile"])
+        self.driver.find_element(*self.mob_number).send_keys(info["mobile"])
 
     def hit_create(self):
         self.driver.find_element(*self.create_account_btn).click()
