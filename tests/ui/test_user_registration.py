@@ -12,6 +12,7 @@ with open(test_data_path) as f:
 
 
 @pytest.mark.parametrize("test_input", test_inputs)
+@pytest.mark.smoke
 def test_valid_user_registration_and_deletion(
     initialize_driver, base_page, home_page, sign_up_page, login_page, test_input
 ):

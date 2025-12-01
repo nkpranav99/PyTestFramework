@@ -5,6 +5,7 @@ from pages.basePage import BasePage
 
 class HomePage(BasePage):
     def __init__(self, driver):
+        super().__init__(driver)
         self.driver = driver
         self.logo = (By.XPATH, "//img[@alt='Website for automation practice']")
 
@@ -32,7 +33,7 @@ class HomePage(BasePage):
         self.driver.find_element(*self.delete_user_btn).click()
 
     def verify_user_deletion(self):
-        BasePage.wait_until_element_visible(self, self.account_deleted_msg)
+        self.wait_until_element_visible(self.account_deleted_msg)
         assert (
             self.driver.find_element(*self.account_deleted_msg).text
             == "ACCOUNT DELETED!"
