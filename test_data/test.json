@@ -1,0 +1,25 @@
+{
+    "data": [
+        {
+            "baseUrl": "https://automationexercise.com/",
+            "user_info": {
+                "title": "Mr",
+                "dob": "1-1-2000",
+                "address_info": {
+                    "first_name": "Test",
+                    "last_name": "Test",
+                    "company": "Test pvt. ltd",
+                    "address": {
+                        "line1": "Test1",
+                        "line2": "test2",
+                        "country": "Singapore",
+                        "state": "test",
+                        "city": "test",
+                        "zipcode": "230912"
+                    },
+                    "mobile": "9999991233"
+                }
+            }
+        }
+    ]
+}

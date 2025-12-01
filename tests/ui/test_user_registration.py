@@ -1,13 +1,21 @@
+import json
 import random
 import string
-from pages.signup import SignUpPage
-from pages.basePage import BasePage
+
+import pytest
+
+test_data_path = "test_data/test.json"
+
+with open(test_data_path) as f:
+    test_data = json.load(f)
+    test_inputs = test_data["data"]
 
 
+@pytest.mark.parametrize("test_input", test_inputs)
 def test_valid_user_registration_and_deletion(
-    initialize_driver, base_page, home_page, sign_up_page, login_page
+    initialize_driver, base_page, home_page, sign_up_page, login_page, test_input
 ):
-    base_page.open("https://automationexercise.com/")
+    base_page.open(test_input["baseUrl"])
     base_page.wait_until_element_visible(home_page.logo)
 
     base_page.click_on_element(home_page.signup)
@@ -20,11 +28,28 @@ def test_valid_user_registration_and_deletion(
     base_page.wait_until_element_visible(sign_up_page.acc_info_heading)
 
     # sign_up_page.select_title("Mr")
-    sign_up_page.enter_acc_info('{"title":"Mr", "dob":"3-8-1999"}')
+    sign_up_page.enter_acc_info(
+        f'{{"title":"{test_input["user_info"]["title"]}", "dob":"{test_input["user_info"]["dob"]}"}}'
+    )
     base_page.click_on_element(sign_up_page.newsletter_signup)
     base_page.click_on_element(sign_up_page.optin)
 
-    sign_up_page.enter_address_info('{"first_name": "Test", "last_name": "Test", "company": "Test pvt. ltd", "address": {"line1": "Test1","line2": "test2","country": "Singapore","state": "test","city": "test","zipcode": "230912"},"mobile": "9999991233"}')
+    sign_up_page.enter_address_info(
+    f'{{'
+    f'"first_name": "{test_input["user_info"]["address_info"]["first_name"]}", '
+    f'"last_name": "{test_input["user_info"]["address_info"]["last_name"]}", '
+    f'"company": "{test_input["user_info"]["address_info"]["company"]}", '
+    f'"address": {{'
+        f'"line1": "{test_input["user_info"]["address_info"]["address"]["line1"]}", '
+        f'"line2": "{test_input["user_info"]["address_info"]["address"]["line2"]}", '
+        f'"country": "{test_input["user_info"]["address_info"]["address"]["country"]}", '
+        f'"state": "{test_input["user_info"]["address_info"]["address"]["state"]}", '
+        f'"city": "{test_input["user_info"]["address_info"]["address"]["city"]}", '
+        f'"zipcode": "{test_input["user_info"]["address_info"]["address"]["zipcode"]}"'
+    f'}}, '
+    f'"mobile": "{test_input["user_info"]["address_info"]["mobile"]}"'
+    f'}}'
+)
     base_page.click_on_element(sign_up_page.create_account_btn)
 
     base_page.wait_until_element_visible(sign_up_page.success_msg)
@@ -35,6 +60,3 @@ def test_valid_user_registration_and_deletion(
     home_page.verify_logged_in_user()
     home_page.delete_user()
     home_page.verify_user_deletion()
-
-
-
