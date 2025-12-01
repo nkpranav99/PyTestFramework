@@ -22,6 +22,17 @@ pipeline {
       steps {
         sh '''
           set -e
+
+        if command -v python3 >/dev/null 2>&1; then
+            PY=python3
+        elif command -v python >/dev/null 2>&1; then
+            PY=python
+        else
+            echo "No Python found on this Jenkins agent!"
+            exit 1
+        fi
+
+        echo "Using Python: $PY"
           # create venv
           ${PYTHON_BIN} -m venv ${VENV}
           . ${VENV}/bin/activate
