@@ -11,19 +11,28 @@ class HomePage(BasePage):
         self.login = (By.XPATH, "//a[contains(text(), ' Signup / Login')]")
         self.signup = (By.XPATH, "//a[contains(text(), ' Signup / Login')]")
 
-        self.username = (By.XPATH, "//a[contains(text(), ''")
+        self.logged_in_as_user = (By.XPATH, "//a[contains(text(), ' Logged in as ')]")
+        self.username = (By.CSS_SELECTOR, "li a b")
+        self.logout = (By.XPATH, "//a[contains(text(), ' Logout'")
 
-        self.delete_user_btn = (By.XPATH, "//a[contains(text(), ''")
-        self.account_deleted_msg = (By.XPATH, "//a[contains(text(), ''")
+        self.delete_user_btn = (By.XPATH, "//a[text()=' Delete Account']")
+        self.account_deleted_msg = (By.XPATH, "//h2/b[text()='Account Deleted!']")
 
-    def get_user_name(self):
-        self.driver.find_element(*self.username).text
+    def verify_logged_in_user(self):
+        username = self.get_username()
+        assert (
+            self.driver.find_element(*self.logged_in_as_user).text
+            == f"Logged in as {username}"
+        ), f"Username does not match! Actual: {self.driver.find_element(*self.logged_in_as_user).text}, Expected: 'Logged in as {username}'"
+
+    def get_username(self):
+        return self.driver.find_element(*self.username).text
 
     def delete_user(self):
         self.driver.find_element(*self.delete_user_btn).click()
 
     def verify_user_deletion(self):
-        BasePage.wait_until_element_visible(self.account_deleted_msg)
+        BasePage.wait_until_element_visible(self, self.account_deleted_msg)
         assert (
             self.driver.find_element(*self.account_deleted_msg).text
             == "ACCOUNT DELETED!"

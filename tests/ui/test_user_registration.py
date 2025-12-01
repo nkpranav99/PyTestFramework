@@ -4,7 +4,7 @@ from pages.signup import SignUpPage
 from pages.basePage import BasePage
 
 
-def test_valid_user_registration(
+def test_valid_user_registration_and_deletion(
     initialize_driver, base_page, home_page, sign_up_page, login_page
 ):
     base_page.open("https://automationexercise.com/")
@@ -30,6 +30,11 @@ def test_valid_user_registration(
     base_page.wait_until_element_visible(sign_up_page.success_msg)
     base_page.click_on_element(sign_up_page.continue_btn)
 
-    base_page.wait(100000)
+    base_page.wait_until_element_visible(home_page.logo)
+
+    home_page.verify_logged_in_user()
+    home_page.delete_user()
+    home_page.verify_user_deletion()
+
 
 
