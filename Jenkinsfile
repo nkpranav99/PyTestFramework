@@ -21,6 +21,13 @@ pipeline {
                 export REPORT_DIR="${WORKSPACE}/test-reports"
                 export ARTIFACT_DIR="${WORKSPACE}/artifacts"
                 mkdir -p ${PIP_CACHE} ${REPORT_DIR} ${ARTIFACT_DIR}
+
+                if [ ! -d "${VENV_DIR}" ]; then
+                    python -m venv "${VENV_DIR}"
+                fi
+
+                "${VENV_DIR}/bin/python" -m pip install --upgrade pip setuptools wheel
+
                 python -m pip install --upgrade pip setuptools wheel
                 if [ -f requirements.txt ]; then
                     python -m pip install --cache-dir=${PIP_CACHE} -r requirements.txt
@@ -34,7 +41,6 @@ pipeline {
             agent {
                 docker {
                 image 'python:3.11-slim'
-                // args: '-v /host/path/.pip_cache:/root/.cache/pip' // keep cache consistent if mounted above
                 }
             }
             steps {
