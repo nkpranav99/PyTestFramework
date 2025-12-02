@@ -8,12 +8,12 @@ pipeline {
     }
 
     stages {
-        stage {
-            steps("Checkout Project"){
+        stage("Checkout Project") {
+            steps{
                 checkout scm
             }
         }
-        stage {
+        stage("Setup Environment for Tests") {
             agent {
                 docker {
                     image 'python:3.11-slim'
