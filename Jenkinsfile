@@ -1,12 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        PIP_CACHE = "/root/.cache/pip"
-        REPORT_DIR = "${env.WORKSPACE}/test-reports"
-        ARTIFACT_DIR = "${env.WORKSPACE}/artifacts"
-    }
-
     stages {
         stage("Checkout Project") {
             steps{
@@ -23,6 +17,9 @@ pipeline {
                 sh '''
                 set -e
                 echo "Python: $(python --version)"
+                export PIP_CACHE="${WORKSPACE}/.cache/pip"
+                export REPORT_DIR="${WORKSPACE}/test-reports"
+                export ARTIFACT_DIR="${WORKSPACE}/artifacts"
                 mkdir -p ${PIP_CACHE} ${REPORT_DIR} ${ARTIFACT_DIR}
                 python -m pip install --upgrade pip setuptools wheel
                 if [ -f requirements.txt ]; then
