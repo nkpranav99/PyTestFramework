@@ -1,94 +1,65 @@
 pipeline {
-  agent any
+    agent any
 
-  // Optional parameter if you want to pass a selector (e.g. -k "smoke" or --browser chrome)
-  parameters {
-    string(name: 'browser_name', defaultValue: '', description: 'Optional pytest arg or selector (leave empty if not used)')
-  }
-
-  environment {
-    VENV = ".venv"
-    REPORTS = "jenkins_reports"
-    // If your project needs a specific Python binary on some agents, change this to 'python' or detect in shell.
-    PYTHON_BIN = "python3"
-  }
-
-  stages {
-    stage('Checkout') {
-      steps { checkout scm }
+    environment {
+        PIP_CACHE = "/root/.cache/pip"
+        REPORT_DIR = "${env.WORKSPACE}/test-reports"
+        ARTIFACT_DIR = "${env.WORKSPACE}/artifacts"
     }
 
-    stage('Setup Environment') {
-      steps {
-        sh '''
-          set -e
+    stages {
+        stage {
+            steps("Checkout Project"){
+                checkout scm
+            }
+        }
+        stage {
+            agent {
+                docker {
+                    image 'python:3.11-slim'
+                }
+            }
+            steps {
+                sh '''
+                set -e
+                echo "Python: $(python --version)"
+                mkdir -p ${PIP_CACHE} ${REPORT_DIR} ${ARTIFACT_DIR}
+                python -m pip install --upgrade pip setuptools wheel
+                if [ -f requirements.txt ]; then
+                    python -m pip install --cache-dir=${PIP_CACHE} -r requirements.txt
+                else
+                    echo "No requirements.txt found; skipping dependency install"
+                fi
+                '''
+            }
+        }
+        stage('Run Tests (Docker)') {
+            agent {
+                docker {
+                image 'python:3.11-slim'
+                // args: '-v /host/path/.pip_cache:/root/.cache/pip' // keep cache consistent if mounted above
+                }
+            }
+            steps {
+                sh '''
+                set -e
+                mkdir -p ${REPORT_DIR}
+                # run tests and write junit xml
+                python -m pytest -q --junitxml=${REPORT_DIR}/junit.xml || true
+                '''
+            }
+            post {
+                always {
+                junit allowEmptyResults: true, testResults: '${WORKSPACE}/test-reports/junit.xml'
+                archiveArtifacts artifacts: 'test-reports/**/*', allowEmptyArchive: true
+                }
+            }
+        }
 
-        if command -v python3 >/dev/null 2>&1; then
-            PY=python3
-        elif command -v python >/dev/null 2>&1; then
-            PY=python
-        else
-            echo "No Python found on this Jenkins agent!"
-            exit 1
-        fi
-
-        echo "Using Python: $PY"
-          # create venv
-          ${PYTHON_BIN} -m venv ${VENV}
-          . ${VENV}/bin/activate
-
-          # upgrade packaging tools
-          python -m pip install --upgrade pip setuptools wheel
-
-          # install poetry into the venv
-          pip install poetry
-
-          # Use poetry to install dependencies INCLUDING dev (so pytest is available).
-          # If you intentionally want to skip dev deps, change to "poetry install --no-dev"
-          poetry config virtualenvs.create false --local
-          poetry install
-
-          mkdir -p ${REPORTS}
-        '''
-      }
     }
-
-    stage('Test') {
-      steps {
-        sh '''
-          set -e
-          . ${VENV}/bin/activate
-
-          # Build pytest command. If browser_name param is empty, just run pytest.
-          if [ -z "${browser_name}" ]; then
-            pytest --junitxml=${REPORTS}/results.xml --maxfail=1 || true
-          else
-            # If browser_name is used to pass an actual pytest arg (like -k or -m or a custom flag),
-            # ensure you pass it correctly when triggering the build.
-            pytest ${browser_name} --junitxml=${REPORTS}/results.xml --maxfail=1 || true
-          fi
-        '''
-      }
+    post {
+        success { echo "Pipeline succeeded" }
+        unstable { echo "Pipeline finished — some tests failed (unstable)" }
+        failure { echo "Pipeline failed" }
     }
-
-    stage('Publish') {
-      steps {
-        // publish junit results (so Jenkins shows test report)
-        junit allowEmptyResults: true, testResults: "${REPORTS}/results.xml"
-
-        // archive the raw xmls and any logs you want to keep
-        archiveArtifacts artifacts: "${REPORTS}/*", allowEmptyArchive: true
-      }
-    }
-  }
-
-  post {
-    always {
-      // best-effort cleanup
-      sh 'rm -rf ${VENV} || true'
-      cleanWs()
-    }
-    success { echo 'Pipeline completed successfully' }
-    failure { echo 'Pipeline failed — check test results and console output' }
-  }
 }
